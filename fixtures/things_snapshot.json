@@ -1,0 +1,16 @@
+{
+  "source": "things",
+  "captured_at": "2026-07-18T12:00:00Z",
+  "entities": [
+    {"id": "TT-0001", "kind": "overdue_task", "title": "Renew car registration",
+     "attrs": {"project": "Errands", "deadline": "2026-07-15"}},
+    {"id": "TT-0002", "kind": "today_task", "title": "Call plumber about water heater quote",
+     "attrs": {"project": "House", "deadline": null}},
+    {"id": "TT-0003", "kind": "today_task", "title": "Ship returns package at UPS",
+     "attrs": {"project": "Errands", "deadline": null}},
+    {"id": "TT-0004", "kind": "deadline_task", "title": "File quarterly sales-tax report",
+     "attrs": {"project": "Admin", "deadline": "2026-07-24"}},
+    {"id": "TT-0005", "kind": "deadline_task", "title": "RSVP to school picnic",
+     "attrs": {"project": "Family", "deadline": "2026-07-22"}}
+  ]
+}

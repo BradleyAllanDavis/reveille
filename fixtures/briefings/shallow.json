@@ -1,0 +1,117 @@
+{
+  "generated_at": "2026-07-18T12:05:00Z",
+  "executive_summary": "5 item(s) need action today across 3 sources; 12 notable in total.",
+  "top_priorities": [
+    {
+      "headline": "wlan subsystem warning",
+      "detail": "subsystem degraded",
+      "priority": 1,
+      "refs": [
+        {
+          "source": "unifi",
+          "id": "health/wlan"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "source": "things",
+      "title": "Tasks",
+      "summary": "5 notable item(s) from things.",
+      "items": [
+        {
+          "headline": "File quarterly sales-tax report",
+          "detail": "deadline task",
+          "priority": 2,
+          "refs": [
+            {
+              "source": "things",
+              "id": "TT-0004"
+            }
+          ]
+        },
+        {
+          "headline": "RSVP to school picnic",
+          "detail": "deadline task",
+          "priority": 2,
+          "refs": [
+            {
+              "source": "things",
+              "id": "TT-0005"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "home_assistant",
+      "title": "House",
+      "summary": "4 notable item(s) from home_assistant.",
+      "items": [
+        {
+          "headline": "Back door lock battery",
+          "detail": "low battery",
+          "priority": 2,
+          "refs": [
+            {
+              "source": "home_assistant",
+              "id": "sensor.back_door_lock_battery"
+            }
+          ]
+        },
+        {
+          "headline": "Upstairs motion sensor",
+          "detail": "unavailable",
+          "priority": 2,
+          "refs": [
+            {
+              "source": "home_assistant",
+              "id": "sensor.upstairs_motion"
+            }
+          ]
+        },
+        {
+          "headline": "Basement workbench light",
+          "detail": "light on",
+          "priority": 3,
+          "refs": [
+            {
+              "source": "home_assistant",
+              "id": "light.basement_workbench"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "source": "unifi",
+      "title": "Network",
+      "summary": "3 notable item(s) from unifi.",
+      "items": [
+        {
+          "headline": "guest-phone",
+          "detail": "new client",
+          "priority": 2,
+          "refs": [
+            {
+              "source": "unifi",
+              "id": "client/aa:bb:cc:00:00:03"
+            }
+          ]
+        },
+        {
+          "headline": "3 clients online",
+          "detail": "client count",
+          "priority": 3,
+          "refs": [
+            {
+              "source": "unifi",
+              "id": "clients/summary"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

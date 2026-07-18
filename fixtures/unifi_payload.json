@@ -1,0 +1,37 @@
+{
+  "captured_at": "2026-07-18T12:00:00+00:00",
+  "health": [
+    {
+      "subsystem": "wan",
+      "status": "ok"
+    },
+    {
+      "subsystem": "wlan",
+      "status": "warning"
+    },
+    {
+      "subsystem": "lan",
+      "status": "ok"
+    }
+  ],
+  "clients": [
+    {
+      "mac": "aa:bb:cc:00:00:01",
+      "hostname": "family-laptop",
+      "network": "LAN",
+      "first_seen": 1735689600
+    },
+    {
+      "mac": "aa:bb:cc:00:00:02",
+      "hostname": "thermostat",
+      "network": "IoT",
+      "first_seen": 1735689600
+    },
+    {
+      "mac": "aa:bb:cc:00:00:03",
+      "hostname": "guest-phone",
+      "network": "Guest",
+      "first_seen": 1784372400
+    }
+  ]
+}

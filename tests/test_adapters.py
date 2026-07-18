@@ -1,0 +1,49 @@
+"""Raw source payloads map to the normalized snapshot correctly."""
+
+from pathlib import Path
+
+from reveille.sources import home_assistant, unifi, wiki
+
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
+
+
+def kinds(snapshot):
+    return {entity.kind for entity in snapshot.entities}
+
+
+def test_ha_extracts_actionable_states():
+    snapshot = home_assistant.from_fixture(FIXTURES / "ha_states.json")
+    assert snapshot.source == "home_assistant"
+    ids = snapshot.ids()
+    assert "binary_sensor.garage_side_door" in ids       # open door
+    assert "binary_sensor.kitchen_window" not in ids     # closed: noise
+    assert "sensor.back_door_lock_battery" in ids        # 12% battery
+    assert "sensor.thermostat_battery" not in ids        # 88%: fine
+    assert "light.basement_workbench" in ids
+    assert "sensor.upstairs_motion" in ids               # unavailable
+    assert "climate.main_floor" not in ids               # normal state: noise
+    assert kinds(snapshot) == {"open_contact", "low_battery", "light_on", "unavailable"}
+
+
+def test_unifi_flags_degraded_subsystem_and_new_client():
+    snapshot = unifi.from_fixture(FIXTURES / "unifi_payload.json")
+    ids = snapshot.ids()
+    assert "health/wlan" in ids                          # warning -> degraded
+    assert "health/wan" not in ids                       # ok: noise
+    assert "client/aa:bb:cc:00:00:03" in ids             # first_seen 1h before capture
+    assert "client/aa:bb:cc:00:00:01" not in ids         # long-known client
+    assert "clients/summary" in ids
+
+
+def test_wiki_picks_recent_docs_only(tmp_path):
+    recent = tmp_path / "fresh.md"
+    recent.write_text("# Fresh doc\nbody\n")
+    stale = tmp_path / "old.md"
+    stale.write_text("# Old doc\nbody\n")
+    import os
+    week_and_change = 8 * 24 * 3600
+    old_time = recent.stat().st_mtime - week_and_change
+    os.utime(stale, (old_time, old_time))
+
+    snapshot = wiki.from_directory(tmp_path)
+    assert [entity.title for entity in snapshot.entities] == ["Fresh doc"]

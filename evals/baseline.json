@@ -1,0 +1,179 @@
+{
+  "cases": {
+    "bloated": {
+      "total": 0.9474,
+      "checks": {
+        "schema": {
+          "score": 1.0,
+          "passed": true
+        },
+        "grounding": {
+          "score": 1.0,
+          "passed": true
+        },
+        "coverage": {
+          "score": 1.0,
+          "passed": true
+        },
+        "priorities": {
+          "score": 1.0,
+          "passed": true
+        },
+        "budget": {
+          "score": 0.5,
+          "passed": false
+        },
+        "hygiene": {
+          "score": 1.0,
+          "passed": true
+        }
+      }
+    },
+    "golden": {
+      "total": 1.0,
+      "checks": {
+        "schema": {
+          "score": 1.0,
+          "passed": true
+        },
+        "grounding": {
+          "score": 1.0,
+          "passed": true
+        },
+        "coverage": {
+          "score": 1.0,
+          "passed": true
+        },
+        "priorities": {
+          "score": 1.0,
+          "passed": true
+        },
+        "budget": {
+          "score": 1.0,
+          "passed": true
+        },
+        "hygiene": {
+          "score": 1.0,
+          "passed": true
+        }
+      }
+    },
+    "hallucinated": {
+      "total": 0.9437,
+      "checks": {
+        "schema": {
+          "score": 1.0,
+          "passed": true
+        },
+        "grounding": {
+          "score": 0.8824,
+          "passed": false
+        },
+        "coverage": {
+          "score": 0.8,
+          "passed": false
+        },
+        "priorities": {
+          "score": 1.0,
+          "passed": true
+        },
+        "budget": {
+          "score": 1.0,
+          "passed": true
+        },
+        "hygiene": {
+          "score": 1.0,
+          "passed": true
+        }
+      }
+    },
+    "leaky": {
+      "total": 0.7895,
+      "checks": {
+        "schema": {
+          "score": 1.0,
+          "passed": true
+        },
+        "grounding": {
+          "score": 1.0,
+          "passed": true
+        },
+        "coverage": {
+          "score": 1.0,
+          "passed": true
+        },
+        "priorities": {
+          "score": 1.0,
+          "passed": true
+        },
+        "budget": {
+          "score": 1.0,
+          "passed": true
+        },
+        "hygiene": {
+          "score": 0.0,
+          "passed": false
+        }
+      }
+    },
+    "malformed": {
+      "total": 0.2105,
+      "checks": {
+        "schema": {
+          "score": 0.0,
+          "passed": false
+        },
+        "grounding": {
+          "score": 0.0,
+          "passed": false
+        },
+        "coverage": {
+          "score": 0.0,
+          "passed": false
+        },
+        "priorities": {
+          "score": 0.0,
+          "passed": false
+        },
+        "budget": {
+          "score": 0.0,
+          "passed": false
+        },
+        "hygiene": {
+          "score": 1.0,
+          "passed": true
+        }
+      }
+    },
+    "shallow": {
+      "total": 0.8737,
+      "checks": {
+        "schema": {
+          "score": 1.0,
+          "passed": true
+        },
+        "grounding": {
+          "score": 1.0,
+          "passed": true
+        },
+        "coverage": {
+          "score": 0.2,
+          "passed": false
+        },
+        "priorities": {
+          "score": 1.0,
+          "passed": true
+        },
+        "budget": {
+          "score": 1.0,
+          "passed": true
+        },
+        "hygiene": {
+          "score": 1.0,
+          "passed": true
+        }
+      }
+    }
+  },
+  "generated_at": "2026-07-18T17:41:00.057580+00:00"
+}
