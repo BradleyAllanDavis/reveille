@@ -1,1 +1,10 @@
 .claude/worktrees/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+graphify-out/cost.json
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root

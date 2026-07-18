@@ -1,0 +1,157 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1784396588.4846885,
+    "ast_hash": "c9e7a5138c5713dcd0ba14879c4502b2",
+    "semantic_hash": "c9e7a5138c5713dcd0ba14879c4502b2"
+  },
+  "evals/baseline.json": {
+    "mtime": 1784396460.0578377,
+    "ast_hash": "6ff81ae85c1a7aa1d3e944c721370981",
+    "semantic_hash": "6ff81ae85c1a7aa1d3e944c721370981"
+  },
+  "fixtures/briefings/bloated.json": {
+    "mtime": 1784396427.2187383,
+    "ast_hash": "f75756f5d3eae065dfa6470d40c80109",
+    "semantic_hash": "f75756f5d3eae065dfa6470d40c80109"
+  },
+  "fixtures/briefings/golden.json": {
+    "mtime": 1784396427.217496,
+    "ast_hash": "6ff7321eca0eee8f9a59bbceebed481c",
+    "semantic_hash": "6ff7321eca0eee8f9a59bbceebed481c"
+  },
+  "fixtures/briefings/hallucinated.json": {
+    "mtime": 1784396427.218127,
+    "ast_hash": "1f6ee58eb7ec2e07f52b9824d4f04ecc",
+    "semantic_hash": "1f6ee58eb7ec2e07f52b9824d4f04ecc"
+  },
+  "fixtures/briefings/leaky.json": {
+    "mtime": 1784396427.2185557,
+    "ast_hash": "11ccd74fb049ec76f9d3007bd400d4c8",
+    "semantic_hash": "11ccd74fb049ec76f9d3007bd400d4c8"
+  },
+  "fixtures/briefings/malformed.json": {
+    "mtime": 1784396427.2189195,
+    "ast_hash": "acabc1a6b8c882bbe4ef5fe6d008edbb",
+    "semantic_hash": "acabc1a6b8c882bbe4ef5fe6d008edbb"
+  },
+  "fixtures/briefings/shallow.json": {
+    "mtime": 1784396427.2183683,
+    "ast_hash": "bc9a0d5a5f2482872d419e429a69dc2c",
+    "semantic_hash": "bc9a0d5a5f2482872d419e429a69dc2c"
+  },
+  "fixtures/ha_states.json": {
+    "mtime": 1784396382.8037205,
+    "ast_hash": "236283dee0af1cf135de9c064cee8d0b",
+    "semantic_hash": "236283dee0af1cf135de9c064cee8d0b"
+  },
+  "fixtures/things_snapshot.json": {
+    "mtime": 1784396382.8015258,
+    "ast_hash": "afcd0ff9009b03fabd0398d83bfa2b80",
+    "semantic_hash": "afcd0ff9009b03fabd0398d83bfa2b80"
+  },
+  "fixtures/unifi_payload.json": {
+    "mtime": 1784396392.92667,
+    "ast_hash": "33e22463ac4f44beb9fa0cc395ee9313",
+    "semantic_hash": "33e22463ac4f44beb9fa0cc395ee9313"
+  },
+  "pyproject.toml": {
+    "mtime": 1784396165.0505667,
+    "ast_hash": "1d978ddd90511ce11b12dacb887f6947",
+    "semantic_hash": "1d978ddd90511ce11b12dacb887f6947"
+  },
+  "scripts/make_fixtures.py": {
+    "mtime": 1784396427.0455532,
+    "ast_hash": "340a63e8703ae8d4bed828c45e4db817",
+    "semantic_hash": "340a63e8703ae8d4bed828c45e4db817"
+  },
+  "src/reveille/__init__.py": {
+    "mtime": 1784396165.0558188,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "src/reveille/cli.py": {
+    "mtime": 1784396303.0663018,
+    "ast_hash": "a8f71d9fa0ccb750b19abdfcd0318cf9",
+    "semantic_hash": "a8f71d9fa0ccb750b19abdfcd0318cf9"
+  },
+  "src/reveille/coordinator.py": {
+    "mtime": 1784396229.3712757,
+    "ast_hash": "85783227c7de3f377708d57e374aa5bd",
+    "semantic_hash": "85783227c7de3f377708d57e374aa5bd"
+  },
+  "src/reveille/evals/__init__.py": {
+    "mtime": 1784396165.0559316,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "src/reveille/evals/checks.py": {
+    "mtime": 1784396258.2354126,
+    "ast_hash": "dc964e7ec3e7b74c3e20c4c81da24d0c",
+    "semantic_hash": "dc964e7ec3e7b74c3e20c4c81da24d0c"
+  },
+  "src/reveille/evals/judge.py": {
+    "mtime": 1784396303.0626018,
+    "ast_hash": "a323afa4af0b547c1357d3ae26587186",
+    "semantic_hash": "a323afa4af0b547c1357d3ae26587186"
+  },
+  "src/reveille/evals/scorecard.py": {
+    "mtime": 1784396273.7502797,
+    "ast_hash": "bea0686e7a5224852ce66372caa74af3",
+    "semantic_hash": "bea0686e7a5224852ce66372caa74af3"
+  },
+  "src/reveille/llm.py": {
+    "mtime": 1784396338.8928695,
+    "ast_hash": "6dadc428ce3dde36a9a5ac52bffb1e51",
+    "semantic_hash": "6dadc428ce3dde36a9a5ac52bffb1e51"
+  },
+  "src/reveille/schema.py": {
+    "mtime": 1784396165.053287,
+    "ast_hash": "ebc44411bb8cc78cf41cdad88ac5742c",
+    "semantic_hash": "ebc44411bb8cc78cf41cdad88ac5742c"
+  },
+  "src/reveille/sources/__init__.py": {
+    "mtime": 1784396165.0558789,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "src/reveille/sources/home_assistant.py": {
+    "mtime": 1784396191.5390432,
+    "ast_hash": "24184680f187f1a544e0bc939f305b66",
+    "semantic_hash": "24184680f187f1a544e0bc939f305b66"
+  },
+  "src/reveille/sources/things.py": {
+    "mtime": 1784396350.5407887,
+    "ast_hash": "feff3198077d4917434df5c8ca04fc5b",
+    "semantic_hash": "feff3198077d4917434df5c8ca04fc5b"
+  },
+  "src/reveille/sources/unifi.py": {
+    "mtime": 1784396382.7944071,
+    "ast_hash": "da3094c8fc2a815cf26db75e089190e8",
+    "semantic_hash": "da3094c8fc2a815cf26db75e089190e8"
+  },
+  "src/reveille/sources/wiki.py": {
+    "mtime": 1784396191.5451236,
+    "ast_hash": "1ba960322766aa8e4c7df1af159afafe",
+    "semantic_hash": "1ba960322766aa8e4c7df1af159afafe"
+  },
+  "tests/test_adapters.py": {
+    "mtime": 1784396504.1345417,
+    "ast_hash": "8075891577691ccf0dbfe18df42a28c3",
+    "semantic_hash": "8075891577691ccf0dbfe18df42a28c3"
+  },
+  "tests/test_coordinator.py": {
+    "mtime": 1784396485.5512843,
+    "ast_hash": "497fc09cb3560ea88f14709d16fa2ce7",
+    "semantic_hash": "497fc09cb3560ea88f14709d16fa2ce7"
+  },
+  "tests/test_evals.py": {
+    "mtime": 1784396460.085669,
+    "ast_hash": "c5d7fc5ed100303a3848d7e9c575d27d",
+    "semantic_hash": "c5d7fc5ed100303a3848d7e9c575d27d"
+  },
+  "tests/test_things.py": {
+    "mtime": 1784396485.5483165,
+    "ast_hash": "3e3bcddf6be7f23b2dab79ab875d2cf6",
+    "semantic_hash": "3e3bcddf6be7f23b2dab79ab875d2cf6"
+  }
+}
