@@ -8,6 +8,7 @@ payload, so tests and evals never need a running HA instance.
 from __future__ import annotations
 
 import json
+import ssl
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,12 +19,18 @@ from ..schema import Entity, SourceSnapshot
 LOW_BATTERY_PCT = 20
 
 
-def fetch(base_url: str, token: str) -> list[dict[str, Any]]:
+def fetch(base_url: str, token: str, verify_ssl: bool = True) -> list[dict[str, Any]]:
+    """``verify_ssl=False`` for a self-signed local instance (matches
+    ``HA_VERIFY_SSL`` in the control plane's own HA MCP wiring)."""
+    ctx = ssl.create_default_context()
+    if not verify_ssl:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
     req = urllib.request.Request(
         f"{base_url.rstrip('/')}/api/states",
         headers={"Authorization": f"Bearer {token}"},
     )
-    with urllib.request.urlopen(req, timeout=10) as resp:
+    with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
         return json.load(resp)
 
 

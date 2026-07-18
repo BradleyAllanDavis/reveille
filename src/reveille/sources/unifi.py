@@ -1,14 +1,18 @@
 """UniFi adapter: raw controller payloads -> SourceSnapshot.
 
-Works from a recorded ``{"health": [...], "clients": [...]}`` payload (the
-shapes returned by ``/api/s/<site>/stat/health`` and ``/stat/sta``). A live
-fetch path can be added behind the same normalizer when needed; the evals
-harness only ever sees the normalized snapshot.
+``fetch()`` is the live path (UniFi Network API, ``X-API-KEY`` header) against
+a local controller's self-signed cert. Everything else works from a recorded
+``{"health": [...], "clients": [...]}`` payload (the shapes returned by
+``/api/s/<site>/stat/health`` and ``/stat/sta``, unwrapped from their
+``{"meta": ..., "data": [...]}`` envelope), so tests and evals never need a
+running controller.
 """
 
 from __future__ import annotations
 
 import json
+import ssl
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -16,6 +20,26 @@ from typing import Any
 from ..schema import Entity, SourceSnapshot
 
 NEW_CLIENT_WINDOW_S = 24 * 3600
+
+
+def _get(url: str, api_key: str, ctx: ssl.SSLContext) -> dict[str, Any]:
+    req = urllib.request.Request(url, headers={"X-API-KEY": api_key, "Accept": "application/json"})
+    with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+        return json.load(resp)
+
+
+def fetch(base_url: str, api_key: str, site: str = "default", verify_ssl: bool = True) -> dict[str, Any]:
+    """Live path: local controllers are almost always self-signed, hence
+    ``verify_ssl`` (same escape hatch the control plane's unifi-mcp-guard
+    uses for ``UNIFI_VERIFY_SSL``)."""
+    ctx = ssl.create_default_context()
+    if not verify_ssl:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    base = f"{base_url.rstrip('/')}/proxy/network/api/s/{site}"
+    health = _get(f"{base}/stat/health", api_key, ctx)
+    clients = _get(f"{base}/stat/sta", api_key, ctx)
+    return {"health": health.get("data", []), "clients": clients.get("data", [])}
 
 
 def from_payload(payload: dict[str, Any], captured_at: datetime | None = None) -> SourceSnapshot:

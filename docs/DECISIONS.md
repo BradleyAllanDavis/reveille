@@ -44,6 +44,47 @@ by Bradley. Unmarked entries are mechanical consequences of marked ones.
   background-isolation guard blocked the harness Write/Edit tools for a repo created
   mid-session, so files landed via shell heredocs. No functional impact.
 
+## 2026-07-18 — phase 2: live sources, scheduling, judge history
+
+- `[llm-synth]` **Live HA/UniFi fetch wired behind the existing normalizers**, not new
+  code paths. `home_assistant.fetch()` already existed; added the matching
+  `unifi.fetch()` (UniFi Network API, `X-API-KEY`, `/proxy/network/api/s/<site>/{stat/health,stat/sta}`,
+  unwrapping the `{"meta", "data"}` envelope) and CLI flags `--live-ha` / `--live-unifi`
+  alongside the existing `--live-things`. Fixtures stay the CI path; `--live-*` is
+  opt-in and untouched by `reveille evals`.
+- `[llm-synth]` **Credential indirection, not a hardcoded secret manager.** A public
+  portfolio repo shouldn't bake in a personal 1Password vault path. `_resolve_secret()`
+  reads `$HA_TOKEN` / `$UNIFI_API_KEY` directly, or runs a command named in
+  `$HA_TOKEN_CMD` / `$UNIFI_API_KEY_CMD` and takes its stdout -- e.g.
+  `HA_TOKEN_CMD='op-read-serialized "op://Automation/Home Assistant Token/credential"'`
+  wires a personal 1Password read without the repo knowing 1Password exists.
+- `[llm-synth]` **Both live fetchers take `verify_ssl`** (`HA_VERIFY_SSL` /
+  `UNIFI_VERIFY_SSL` env, default true). Local HA/UniFi controllers are almost always
+  self-signed; verified live against a real controller and a real HA instance
+  (self-signed Caddy front, `-k`-equivalent `ssl.CERT_NONE`) before landing.
+- `[llm-synth]` **Scheduled-run target: a plain shell script, not a new dependency.**
+  `scripts/scheduled-brief.sh` wraps `reveille brief`, writes dated markdown +
+  a run log, and propagates a nonzero exit so cron/launchd's own failure handling
+  fires. `contrib/launchd/com.reveille.daily.plist` is the macOS example; a cron
+  line works identically on Linux. No new scheduler abstraction -- the CLI is
+  already the unit of work.
+- `[llm-synth]` **Judge-score history is a separate sqlite side-store
+  (`evals/judge_history.sqlite`, gitignored)**, not folded into `baseline.json`.
+  Same separation-of-concerns as the deterministic/judge split: `baseline.json` is
+  the CI gate (committed, deterministic checks only); the history db is a local,
+  accumulating log of judge verdicts over time, printed as a trend delta on each
+  `--judge` run. Mirrors the control-plane's own score side-stores per the lineage
+  table below.
+- `[llm-synth]` **LLM path run end-to-end against a real key, scored against the
+  offline composer.** Both hit 1.00 on every deterministic check (grounding,
+  coverage, priorities, budget, hygiene, schema) over the fixture snapshots -- the
+  LLM path clears the floor the offline composer sets, as designed. The optional
+  judge rubric (1-5, model-graded) preferred the LLM path on editorial quality:
+  actionability 3 vs 2, prioritization 3 vs 2, concision 2 vs 3 (offline's terser
+  phrasing edges concision; the LLM path's analyst framing edges the other two).
+  Neither run is committed as a fixture -- this was a one-time verification, not a
+  new golden case.
+
 ## Lineage (what was extracted from where)
 
 | pattern | control-plane origin |

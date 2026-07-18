@@ -90,7 +90,7 @@ Design choices that carry the weight:
 
 ```bash
 uv sync
-uv run pytest                 # 18 tests, no network, no API key
+uv run pytest                 # 26 tests, no network, no API key
 uv run reveille evals         # score fixture briefings vs the committed baseline
 uv run reveille brief --offline               # briefing from fixtures, no key needed
 uv run reveille brief --live-things --offline # real read-only Things data (macOS)
@@ -112,19 +112,55 @@ src/reveille/
     checks.py         # the six deterministic checks
     scorecard.py      # suite runner, markdown scorecard, baseline compare
     judge.py          # optional model-graded rubric
+    history.py        # judge-verdict sqlite side-store (local, gitignored)
 fixtures/             # synthetic source payloads + golden/degraded briefing cases
 evals/baseline.json   # committed scorecard baseline (the CI gate)
 scripts/make_fixtures.py
+scripts/scheduled-brief.sh   # cron/launchd entry point
+contrib/launchd/             # macOS launchd example
 tests/
 ```
 
+## Live sources (optional)
+
+Every source has a fixture path (the CI default) and a live path (opt-in flags):
+
+```bash
+uv run reveille brief --live-things                  # local Things sqlite (macOS)
+HA_URL=https://homeassistant HA_TOKEN_CMD='op-read-serialized "op://Automation/Home Assistant Token/credential"' \
+  uv run reveille brief --live-ha
+UNIFI_URL=https://192.168.0.1 UNIFI_API_KEY_CMD='op-read-serialized "op://Automation/UniFi API Key/credential"' \
+  uv run reveille brief --live-unifi
+```
+
+Credentials resolve from an env var directly (`HA_TOKEN`, `UNIFI_API_KEY`) or from a
+command named in a `*_CMD` env var, whose stdout is the secret -- this repo never
+hardcodes a secret manager. `HA_VERIFY_SSL=false` / `UNIFI_VERIFY_SSL=false` (default
+true) skip TLS verification for a self-signed local controller/instance. `--live-*`
+flags are independent of `reveille evals`, which always scores the committed fixtures.
+
+## Running on a schedule
+
+`scripts/scheduled-brief.sh [reveille brief flags]` wraps `reveille brief`, writes
+dated markdown + a run log to `$REVEILLE_OUT_DIR` (default `~/reveille-briefings`),
+and exits nonzero on failure so cron/launchd's own failure handling fires.
+`contrib/launchd/com.reveille.daily.plist` is a macOS launchd example (7am daily); a
+cron line (`0 7 * * * /path/to/reveille/scripts/scheduled-brief.sh --offline`) works
+identically on Linux.
+
 ## Status and roadmap
 
-Vertical slice complete: Things is a live source end-to-end (real sqlite adapter,
-schema-accurate synthetic tests), HA/UniFi run from recorded payloads through the same
-normalizers their live fetchers use, and the evals harness gates on the committed
-baseline. Next: live HA/UniFi fetch wiring, a scheduled run target, judge-score history
-tracking.
+Vertical slice complete: Things, Home Assistant, and UniFi are all live sources
+end-to-end (fixture path for CI, opt-in `--live-*` flags for the real thing), the
+evals harness gates on the committed baseline, a scheduled-run target exists for
+cron/launchd, and judge verdicts accumulate in a local sqlite history
+(`evals/judge_history.sqlite`) so editorial-quality trend is visible run over run.
+The LLM path has been run end-to-end against a real key and eval-scored against the
+offline composer: both hit 1.00 on every deterministic check, and the judge rubric
+preferred the LLM path 8/15 vs 7/15 (better actionability and prioritization; offline
+edges concision) -- see `docs/DECISIONS.md`. Next: wiki source live wiring (currently
+fixture-only in the same way HA/UniFi were before this phase), a scorecard-total
+history alongside the judge history.
 
 ## Provenance
 

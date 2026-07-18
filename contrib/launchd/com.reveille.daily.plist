@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  macOS launchd example for a daily 7am briefing. Replace /path/to/reveille
+  with the repo's absolute path, then:
+
+    cp contrib/launchd/com.reveille.daily.plist ~/Library/LaunchAgents/
+    # edit the copy to substitute the real repo path
+    launchctl load -w ~/Library/LaunchAgents/com.reveille.daily.plist
+
+  Any --live-* flags (e.g. --live-things --live-ha) go on the ProgramArguments
+  line; live credentials are read from the environment per README "Live
+  sources" -- set them in a wrapper env file loaded from .bashrc/.zshrc-style
+  shell init, since launchd agents don't inherit an interactive login shell.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.reveille.daily</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>/path/to/reveille/scripts/scheduled-brief.sh --offline</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>7</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/tmp/reveille-daily.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/reveille-daily.err</string>
+</dict>
+</plist>

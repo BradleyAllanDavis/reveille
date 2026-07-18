@@ -1,10 +1,24 @@
 """Raw source payloads map to the normalized snapshot correctly."""
 
+import io
+import json
 from pathlib import Path
 
 from reveille.sources import home_assistant, unifi, wiki
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
+
+
+def _fake_urlopen(responses):
+    """A urllib.request.urlopen replacement serving canned JSON bodies in
+    call order; records every request made for header/URL assertions."""
+    calls = []
+
+    def fake(req, context=None, timeout=None):
+        calls.append(req)
+        return io.BytesIO(json.dumps(responses[len(calls) - 1]).encode())
+
+    return fake, calls
 
 
 def kinds(snapshot):
@@ -47,3 +61,35 @@ def test_wiki_picks_recent_docs_only(tmp_path):
 
     snapshot = wiki.from_directory(tmp_path)
     assert [entity.title for entity in snapshot.entities] == ["Fresh doc"]
+
+
+def test_ha_fetch_sends_bearer_token_and_feeds_from_states(monkeypatch):
+    states = json.loads((FIXTURES / "ha_states.json").read_text())
+    fake, calls = _fake_urlopen([states])
+    monkeypatch.setattr("urllib.request.urlopen", fake)
+
+    result = home_assistant.fetch("https://homeassistant", "secret-token")
+
+    assert result == states
+    assert calls[0].full_url == "https://homeassistant/api/states"
+    assert calls[0].get_header("Authorization") == "Bearer secret-token"
+
+
+def test_unifi_fetch_hits_health_and_sta_and_unwraps_data(monkeypatch):
+    fake, calls = _fake_urlopen(
+        [
+            {"meta": {"rc": "ok"}, "data": [{"subsystem": "wan", "status": "ok"}]},
+            {"meta": {"rc": "ok"}, "data": [{"mac": "aa:bb", "hostname": "phone"}]},
+        ]
+    )
+    monkeypatch.setattr("urllib.request.urlopen", fake)
+
+    payload = unifi.fetch("https://192.168.0.1", "api-key", site="default")
+
+    assert payload == {
+        "health": [{"subsystem": "wan", "status": "ok"}],
+        "clients": [{"mac": "aa:bb", "hostname": "phone"}],
+    }
+    assert calls[0].full_url == "https://192.168.0.1/proxy/network/api/s/default/stat/health"
+    assert calls[1].full_url == "https://192.168.0.1/proxy/network/api/s/default/stat/sta"
+    assert calls[0].get_header("X-api-key") == "api-key"
