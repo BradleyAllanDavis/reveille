@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from reveille.cli import _fixture_snapshots  # noqa: E402
+from reveille.demo import demo_snapshots  # noqa: E402
 from reveille.coordinator import compose_offline  # noqa: E402
 
 OUT = Path(__file__).resolve().parents[1] / "fixtures" / "briefings"
@@ -27,7 +27,7 @@ def dump(name: str, data: dict) -> None:
 
 
 def main() -> None:
-    briefing = compose_offline(_fixture_snapshots())
+    briefing = compose_offline(demo_snapshots())
     briefing.generated_at = briefing.generated_at.replace(
         year=2026, month=7, day=18, hour=12, minute=5, second=0, microsecond=0
     )

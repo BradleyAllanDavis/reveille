@@ -16,6 +16,9 @@ reveille = "reveille.cli:main"
 
 [dependency-groups]
 dev = [
+    # starlette.testclient (used by tests/test_api.py) prefers httpx2 over
+    # httpx and warns on every run if it's absent -- this isn't a stray
+    # import, it's what silences that deprecation warning.
     "httpx2>=2.12.0",
     "pytest>=8.0",
     "ruff>=0.6",
