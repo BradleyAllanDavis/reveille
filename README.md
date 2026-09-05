@@ -90,15 +90,30 @@ Design choices that carry the weight:
 
 ```bash
 uv sync
-uv run pytest                 # 26 tests, no network, no API key
+uv run pytest                 # 30 tests, no network, no API key
 uv run reveille evals         # score fixture briefings vs the committed baseline
 uv run reveille brief --offline               # briefing from fixtures, no key needed
 uv run reveille brief --live-things --offline # real read-only Things data (macOS)
 ANTHROPIC_API_KEY=... uv run reveille brief   # full multi-agent path
+uv run reveille serve --port 8420             # demo HTTP API, see below
 ```
 
 Fixtures are synthetic. Nothing in the repo requires credentials, and the Things adapter
 opens the database with sqlite `mode=ro`.
+
+## Demo API
+
+`reveille serve` runs a two-endpoint FastAPI app that backs the "run now" button on the
+live dashboard ([bdavis.ai/reveille](https://bdavis.ai/reveille)):
+
+| endpoint | what it does |
+|---|---|
+| `GET /api/briefing` | the most recent briefing, generating one on first request |
+| `POST /api/run` | regenerate now |
+
+Both always compose over `demo.demo_snapshots()` -- the same synthetic fixtures
+`reveille brief --offline` uses -- so the process never touches a real credential or a
+live source adapter, and is safe to expose publicly.
 
 ## Repo map
 
@@ -108,6 +123,8 @@ src/reveille/
   sources/            # one adapter per source, raw payload -> normalized snapshot
   coordinator.py      # analyst fan-out, editor fan-in, offline composer
   llm.py              # narrow backend seam (Anthropic client / test fake)
+  demo.py             # the synthetic fixture snapshots the CLI, API, and evals all share
+  api.py              # the two-endpoint demo API (`reveille serve`)
   evals/
     checks.py         # the six deterministic checks
     scorecard.py      # suite runner, markdown scorecard, baseline compare

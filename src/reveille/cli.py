@@ -18,7 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .coordinator import compose, compose_offline
-from .evals.scorecard import compare, load_snapshots, run_suite, to_markdown, to_scorecard
+from .demo import demo_snapshots
+from .evals.scorecard import compare, run_suite, to_markdown, to_scorecard
 from .schema import Briefing, SourceSnapshot
 from .sources import home_assistant, things, unifi, wiki
 
@@ -104,16 +105,8 @@ def cmd_brief(args: argparse.Namespace) -> int:
     return 0
 
 
-def _fixture_snapshots() -> list[SourceSnapshot]:
-    normalized = [FIXTURES / "things_snapshot.json"]
-    snapshots = load_snapshots(normalized)
-    snapshots.append(home_assistant.from_fixture(FIXTURES / "ha_states.json"))
-    snapshots.append(unifi.from_fixture(FIXTURES / "unifi_payload.json"))
-    return snapshots
-
-
 def cmd_evals(args: argparse.Namespace) -> int:
-    snapshots = _fixture_snapshots()
+    snapshots = demo_snapshots()
     results = run_suite(FIXTURES / "briefings", snapshots)
     scorecard = to_scorecard(results)
     scorecard["generated_at"] = datetime.now(timezone.utc).isoformat()
@@ -177,8 +170,20 @@ def main(argv: list[str] | None = None) -> int:
     evals.add_argument("--judge", action="store_true", help="also run the LLM-judge rubric")
     evals.set_defaults(func=cmd_evals)
 
+    serve = sub.add_parser("serve", help="run the demo HTTP API (uvicorn)")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8420)
+    serve.set_defaults(func=cmd_serve)
+
     args = parser.parse_args(argv)
     return args.func(args)
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    import uvicorn
+
+    uvicorn.run("reveille.api:app", host=args.host, port=args.port)
+    return 0
 
 
 if __name__ == "__main__":

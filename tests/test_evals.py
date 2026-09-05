@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from reveille.cli import _fixture_snapshots
+from reveille.demo import demo_snapshots
 from reveille.evals.checks import run_checks
 from reveille.evals.scorecard import compare, run_suite, score_case, to_scorecard
 
@@ -16,7 +16,7 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
 @pytest.fixture(scope="module")
 def snapshots():
-    return _fixture_snapshots()
+    return demo_snapshots()
 
 
 def by_name(checks):

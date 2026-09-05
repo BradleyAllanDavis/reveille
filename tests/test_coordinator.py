@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from reveille.cli import _fixture_snapshots
+from reveille.demo import demo_snapshots
 from reveille.coordinator import compose, compose_offline, run_analyst
 from reveille.evals.checks import run_checks
 
@@ -40,7 +40,7 @@ def analyst_reply(source, entity_id):
 
 
 def test_compose_fans_out_and_merges():
-    snapshots = _fixture_snapshots()
+    snapshots = demo_snapshots()
     first_ids = [snapshot.entities[0].id for snapshot in snapshots]
     replies = [analyst_reply(s.source, i) for s, i in zip(snapshots, first_ids)]
     editor_reply = json.dumps(
@@ -59,7 +59,7 @@ def test_compose_fans_out_and_merges():
 
 
 def test_json_repair_retry():
-    snapshots = _fixture_snapshots()[:1]
+    snapshots = demo_snapshots()[:1]
     good = analyst_reply(snapshots[0].source, snapshots[0].entities[0].id)
     backend = FakeBackend(["sorry, here you go!", good])
 
@@ -71,14 +71,14 @@ def test_json_repair_retry():
 
 
 def test_repair_gives_up_after_one_retry():
-    snapshots = _fixture_snapshots()[:1]
+    snapshots = demo_snapshots()[:1]
     backend = FakeBackend(["nope", "still nope"])
     with pytest.raises(ValueError):
         asyncio.run(run_analyst(backend, snapshots[0]))
 
 
 def test_offline_composer_passes_its_own_evals():
-    snapshots = _fixture_snapshots()
+    snapshots = demo_snapshots()
     briefing = compose_offline(snapshots)
     checks = run_checks(json.loads(briefing.model_dump_json()), snapshots)
     failed = [check.name for check in checks if not check.passed]
