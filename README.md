@@ -90,7 +90,7 @@ Design choices that carry the weight:
 
 ```bash
 uv sync
-uv run pytest                 # 30 tests, no network, no API key
+uv run pytest                 # 31 tests, no network, no API key
 uv run reveille evals         # score fixture briefings vs the committed baseline
 uv run reveille brief --offline               # briefing from fixtures, no key needed
 uv run reveille brief --live-things --offline # real read-only Things data (macOS)

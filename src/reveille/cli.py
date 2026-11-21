@@ -17,6 +17,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from .coordinator import compose, compose_offline
 from .demo import demo_snapshots
 from .evals.scorecard import compare, run_suite, to_markdown, to_scorecard
@@ -119,7 +121,13 @@ def cmd_evals(args: argparse.Namespace) -> int:
 
         backend = AnthropicBackend()
         for path in sorted((FIXTURES / "briefings").glob("*.json")):
-            briefing = Briefing.model_validate_json(path.read_text())
+            try:
+                briefing = Briefing.model_validate_json(path.read_text())
+            except ValidationError:
+                # A briefing that fails the schema can't be rendered; the schema check
+                # already scores it 0, so there is nothing for the judge to read.
+                print(f"\njudge[{path.stem}] (skipped): fails the schema, nothing to judge")
+                continue
             verdict = judge_sync(backend, briefing.to_markdown())
             print(f"\njudge[{path.stem}]: {json.dumps(verdict)}")
             previous = history.trend(JUDGE_HISTORY_DB, path.stem, limit=1)
