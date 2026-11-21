@@ -85,6 +85,56 @@ by Bradley. Unmarked entries are mechanical consequences of marked ones.
   Neither run is committed as a fixture -- this was a one-time verification, not a
   new golden case.
 
+## 2026-11-21 — content-hash cache for the judge cell
+
+- `[llm-synth]` **Only the judge is cached; the six deterministic checks are not.**
+  Verified by reading the harness: `checks.py` and `scorecard.py` never import the LLM
+  seam, so the only token spend in `reveille evals` is the optional `--judge` call, once
+  per fixture. The deterministic suite (36 cells) measures 0.44 ms per full run. Looking
+  those 36 cells up in this same cache, hash plus read with every entry warm, measures
+  0.85 ms, so caching them would be about twice as slow as recomputing and would add a
+  stale-score risk to the CI gate. A `--judge` run reports them in one line as
+  `skipped-deterministic` rather than pretending they were cache hits.
+- `[llm-synth]` **Key = sha256 over canonical JSON of (step id, `JUDGE_VERSION`, rubric
+  text, model id, `max_tokens`, rendered briefing markdown).** Invalidation is purely
+  structural: there is no TTL and nothing to remember to flush. `JUDGE_VERSION` exists
+  for the one change the other parts can't see, a logic change in parsing or validation.
+  The fixture's name is deliberately not in the key, so the cache is addressed by content
+  alone.
+- `[llm-synth]` **The validated verdict is cached, not the raw model reply.** The
+  obvious design is a caching wrapper at the `LLMBackend` seam. That was rejected
+  because a seam-level cache stores the reply before it is parsed, so one malformed reply
+  would be memoized and replayed forever. Memoizing one level up, in `cached_judge()`,
+  stores only verdicts that passed validation, and still composes with any backend
+  including the test fake. Cache entries are re-validated on read, so a corrupt or
+  out-of-range file is a miss that the next call overwrites.
+- `[llm-synth]` **History rule changed, explicitly: a cached verdict a case already has
+  on record is not re-appended to `judge_history.sqlite`.** Before, every `--judge` run
+  appended one row per fixture. With a cache, a warm rerun produces no new model opinion,
+  and re-appending would pad the trend with duplicates. A miss always records. A hit
+  records only when its scores differ from the case's latest row (or the case has none),
+  which covers the cold-run dedupe below and a fixture reverted to earlier content. The
+  comparison is on the three scores, not the rationale text, because the trend is a
+  trend of scores.
+- `[llm-synth]` **Two fixtures share one cache entry.** `golden` and `hallucinated`
+  render to byte-identical markdown, because the hallucinated source refs live in fields
+  the markdown omits. So the judge cannot tell them apart, which is correct: catching
+  hallucinated refs is the grounding check's job, not the rubric's. A cold run is 4 model
+  calls for 5 judge cells; a warm rerun is 0.
+- `[llm-synth]` **Fixed in passing: `evals --judge` crashed on the `malformed` fixture.**
+  The judge loop schema-validated every fixture and `malformed` is invalid by design, so
+  the run raised partway through, after spending calls on the fixtures sorted before it.
+  It went unnoticed because the judge path had no test. A schema-invalid briefing is now
+  reported as `skipped` (nothing to render; the schema check already scores it 0), and
+  the judge loop is covered end to end with a counting fake backend.
+- `[llm-synth]` **`--clear-cache` clears, then runs.** Exiting after the clear would make
+  the common intent, a forced refresh, a two-command operation. It deletes only
+  `<sha256>.json` entries and their temp files, never the directory or other files in it, because
+  `REVEILLE_CACHE_DIR` is user-supplied and a recursive delete of a mistyped path is not
+  a risk worth taking for a cache. `--no-cache` bypasses both read and write.
+- `[llm-synth]` **Not done: caching the `brief` composer's model calls.** Those run on
+  live data that changes every morning, so the hit rate would be near zero.
+
 ## Lineage (what was extracted from where)
 
 | pattern | control-plane origin |

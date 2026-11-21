@@ -50,6 +50,77 @@ An optional LLM-judge layer (`reveille evals --judge`) grades editorial quality 
 alongside the deterministic total, never blended into it, so rubric drift can't mask a
 grounding regression.
 
+### Judge cache: reruns on unchanged inputs cost zero model calls
+
+The judge is the only eval step that spends tokens, so it is the only step that is
+cached. Each verdict is stored on disk under a content hash, and a rerun whose inputs
+haven't changed reads the stored verdict instead of calling the model.
+
+**The key** is sha256 over a canonical JSON serialization of everything that can change
+the answer:
+
+| key part | invalidates when |
+|---|---|
+| step id (`judge`) | another cached step is ever added |
+| `JUDGE_VERSION` | scoring logic changes (parsing, validation, axes): bump the constant |
+| rubric text | the rubric is edited at all |
+| model id | the judge model changes |
+| `max_tokens` | model params change |
+| rendered briefing markdown | the fixture's judged content changes |
+
+Change any one part and the key changes, so a stale verdict cannot be served. There is
+no TTL, and nothing to flush by hand when a fixture, the rubric or the model changes.
+The one manual step is bumping `JUDGE_VERSION` after editing the judge's own code.
+
+**What is not cached, and why.** The six deterministic checks recompute on every run,
+and a `--judge` run says so in one line (`skipped-deterministic`). They are pure functions over a small JSON
+fixture: all 36 check cells (6 checks x 6 fixtures) run in about half a millisecond
+(0.44 ms measured on a laptop, averaged over 200 runs, file reads included). Looking the
+same 36 cells up in this cache, hash plus file read on a fully warm cache, measures
+0.85 ms: about twice as slow as recomputing them. Caching would cost time and add the
+one failure a CI gate can't afford, a stale score.
+
+**The run report** shows a status per judge cell and a summary line:
+
+```
+cache: deterministic checks are skipped-deterministic (recomputed every run, never cached)
+judge[golden] (miss): {"actionability": 4, "prioritization": 3, "concision": 5, ...}
+judge[hallucinated] (hit): {...}
+judge[malformed] (skipped): fails the schema, nothing to judge
+...
+judge: 1 hits, 4 misses, 1 skipped (4 model calls)
+```
+
+**Cost, from this repo's own fixtures.** There are 6 fixture briefings. One
+(`malformed`) fails the schema and can't be rendered, leaving 5 judge cells; two of
+those (`golden` and `hallucinated`) render to byte-identical markdown, because the
+hallucinated source refs live in fields the markdown doesn't print.
+
+| run | model calls |
+|---|---|
+| no cache (`--no-cache`), every run | 5 |
+| cold cache | 4 (the identical pair shares one call) |
+| warm rerun, nothing changed | **0** |
+| warm rerun, one fixture's content edited | 1 |
+
+Those 4 cold calls send 6,131 characters of rubric plus briefing, roughly 1,500 input
+tokens at ~4 characters per token (an estimate; the repo has no tokenizer and pins no
+price, so no dollar figure is claimed). The saving that matters is the call count.
+
+**Flags and location.**
+
+- `--no-cache` bypasses the cache entirely: no read, no write, every cell calls the model.
+- `--clear-cache` deletes the cached verdicts, then runs as normal (so with `--judge` it
+  is a forced refresh that repopulates the cache).
+- The cache lives in `evals/judge_cache/` (gitignored); set `REVEILLE_CACHE_DIR` to move it.
+- A corrupt, truncated or out-of-range cache file is a miss, never a crash, and the miss
+  rewrites it. Only validated verdicts are stored, so a malformed model reply is never
+  memoized.
+
+**History.** A cached verdict whose scores match the case's latest row in
+`evals/judge_history.sqlite` is not appended again, so reruns don't pad the trend with
+duplicates. A fresh model call always records.
+
 ## Architecture
 
 ```mermaid
@@ -90,7 +161,7 @@ Design choices that carry the weight:
 
 ```bash
 uv sync
-uv run pytest                 # 31 tests, no network, no API key
+uv run pytest                 # 54 tests, no network, no API key
 uv run reveille evals         # score fixture briefings vs the committed baseline
 uv run reveille brief --offline               # briefing from fixtures, no key needed
 uv run reveille brief --live-things --offline # real read-only Things data (macOS)
@@ -129,6 +200,7 @@ src/reveille/
     checks.py         # the six deterministic checks
     scorecard.py      # suite runner, markdown scorecard, baseline compare
     judge.py          # optional model-graded rubric
+    cache.py          # content-hash cache for judge verdicts (local, gitignored)
     history.py        # judge-verdict sqlite side-store (local, gitignored)
 fixtures/             # synthetic source payloads + golden/degraded briefing cases
 evals/baseline.json   # committed scorecard baseline (the CI gate)

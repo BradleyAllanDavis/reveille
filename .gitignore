@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 evals/judge_history.sqlite
+evals/judge_cache/

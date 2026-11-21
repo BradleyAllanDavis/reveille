@@ -21,6 +21,7 @@ from pydantic import ValidationError
 
 from .coordinator import compose, compose_offline
 from .demo import demo_snapshots
+from .evals.cache import ResultCache, default_dir
 from .evals.scorecard import compare, run_suite, to_markdown, to_scorecard
 from .schema import Briefing, SourceSnapshot
 from .sources import home_assistant, things, unifi, wiki
@@ -114,23 +115,37 @@ def cmd_evals(args: argparse.Namespace) -> int:
     scorecard["generated_at"] = datetime.now(timezone.utc).isoformat()
     print(to_markdown(results))
 
+    store = ResultCache(default_dir(REPO_ROOT))
+    if args.clear_cache:
+        print(f"\ncleared {store.clear()} cache entries")
+    cache = None if args.no_cache else store
+
     if args.judge:
         from .evals import history
-        from .evals.judge import judge_sync
+        from .evals.judge import AXES, cached_judge
         from .llm import AnthropicBackend
 
+        print("\ncache: deterministic checks are skipped-deterministic (recomputed every run, never cached)")
         backend = AnthropicBackend()
+        statuses: list[str] = []
         for path in sorted((FIXTURES / "briefings").glob("*.json")):
             try:
                 briefing = Briefing.model_validate_json(path.read_text())
             except ValidationError:
                 # A briefing that fails the schema can't be rendered; the schema check
                 # already scores it 0, so there is nothing for the judge to read.
+                statuses.append("skipped")
                 print(f"\njudge[{path.stem}] (skipped): fails the schema, nothing to judge")
                 continue
-            verdict = judge_sync(backend, briefing.to_markdown())
-            print(f"\njudge[{path.stem}]: {json.dumps(verdict)}")
+            verdict, status = cached_judge(backend, briefing.to_markdown(), cache)
+            statuses.append(status)
+            print(f"\njudge[{path.stem}] ({status}): {json.dumps(verdict)}")
             previous = history.trend(JUDGE_HISTORY_DB, path.stem, limit=1)
+            if status == "hit" and previous and previous[0][1:] == tuple(verdict[axis] for axis in AXES):
+                # A cached verdict this case already has on record is not a new
+                # observation; re-appending it would double-count the trend.
+                print("  history unchanged (cached verdict already recorded)")
+                continue
             history.record(JUDGE_HISTORY_DB, path.stem, verdict)
             if previous:
                 _, prev_a, prev_p, prev_c = previous[0]
@@ -139,6 +154,9 @@ def cmd_evals(args: argparse.Namespace) -> int:
                     f"prioritization {prev_p}->{verdict['prioritization']}, "
                     f"concision {prev_c}->{verdict['concision']}"
                 )
+        n = {status: statuses.count(status) for status in ("hit", "miss", "bypassed", "skipped")}
+        extras = "".join(f", {n[status]} {status}" for status in ("bypassed", "skipped") if n[status])
+        print(f"\njudge: {n['hit']} hits, {n['miss']} misses{extras} ({n['miss'] + n['bypassed']} model calls)")
 
     if args.update_baseline:
         BASELINE.parent.mkdir(exist_ok=True)
@@ -176,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     evals = sub.add_parser("evals", help="run the eval suite over fixture briefings")
     evals.add_argument("--update-baseline", action="store_true")
     evals.add_argument("--judge", action="store_true", help="also run the LLM-judge rubric")
+    evals.add_argument("--no-cache", action="store_true", help="bypass the judge cache (no read, no write)")
+    evals.add_argument("--clear-cache", action="store_true", help="delete cached judge verdicts, then run as normal")
     evals.set_defaults(func=cmd_evals)
 
     serve = sub.add_parser("serve", help="run the demo HTTP API (uvicorn)")

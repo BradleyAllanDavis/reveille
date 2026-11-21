@@ -19,6 +19,7 @@ class FakeBackend:
 def judge_run(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(llm, "AnthropicBackend", FakeBackend)
     monkeypatch.setattr(cli, "JUDGE_HISTORY_DB", tmp_path / "history.sqlite")
+    monkeypatch.setenv("REVEILLE_CACHE_DIR", str(tmp_path / "cache"))
 
     def run():
         assert cli.main(["evals", "--judge"]) == 0
